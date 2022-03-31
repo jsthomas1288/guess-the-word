@@ -29,9 +29,9 @@ const playAgainButton = document.querySelector(".play-again");
 const firstWord = "magnolia";
 
 // This is to change the letters of the first word into "●"
-const dotSymbol = function (parameter) {
+const dotSymbol = function (firstWord) {
   const dotLetters = [];
-  for (const letters of parameter) {
+  for (const letters of firstWord) {
     // console.log(letters);
     dotLetters.push("●");
     // console.log(dotLetters);
@@ -54,7 +54,7 @@ guessButton.addEventListener("click", function (e) {
   message.innerText = "";
 
   // This checks what the text input is and tells the user what they should be doing
-  const guess = checkInput(letter);
+  checkInput(letter);
 
   // This stores all the guesses into an array
   makeGuess(letter);
@@ -96,6 +96,44 @@ const makeGuess = function (parameter) {
     // Pushes the guessed letters into the guessesLetter array
     guessedLetters.push(upperCase);
     // This shows that the guesses are being stored in the guessedLetters array
-    console.log(guessedLetters);
+    // console.log(guessedLetters);
+  }
+
+  guessedList();
+
+  letterReveal(guessedLetters);
+};
+
+const guessedList = function () {
+  guess.innerHTML = "";
+  for (const letter of guessedLetters) {
+    const letterList = document.createElement("li");
+    letterList.innerText = letter;
+    guess.append(letterList);
+  }
+};
+
+const letterReveal = function (guessedLetters) {
+  const wordUpper = firstWord.toUpperCase();
+  const wordArray = wordUpper.split("");
+  // console.log(wordArray);
+
+  const dotRemove = [];
+  for (const letters of wordArray) {
+    if (guessedLetters.includes(letters)) {
+      dotRemove.push(letters.toUpperCase());
+    } else {
+      dotRemove.push("●");
+    }
+  }
+  word.innerText = dotRemove.join("");
+  checkWin();
+};
+
+const checkWin = function () {
+  const win = firstWord.toUpperCase();
+  if (win === word.innerText) {
+    message.classList.add("win");
+    message.innerHTML = `<p class="highlight">You guessed correct the word! Congrats!</p>`;
   }
 };
