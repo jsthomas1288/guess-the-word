@@ -1,32 +1,28 @@
-// This is where the player's letter guess goes
 const guess = document.querySelector(".guessed-letters");
-
-// This is the guess button
 const guessButton = document.querySelector(".guess");
-
-// This is for the text input where the player will guess a letter
 const letterInput = document.querySelector(".letter");
-
-// This is the paragraph where the word in progress will appear
 const word = document.querySelector(".word-in-progress");
-
-// This is to create an empty array to contain all the letters that the player guesses
-const guessedLetters = [];
-
-// This is the paragraph where the remaining guesses will display
 const remaining = document.querySelector(".remaining");
-
-// This is the span inside the paragraph where the remaining guesses will display
-const span = document.querySelector("span");
-
-// This is the paragraph where messages will appear when the player guesses a letter
+const span = document.querySelector(".remaining span");
 const message = document.querySelector(".message");
-
-// This is the hidden button that will appear prompting the player to play again
 const playAgainButton = document.querySelector(".play-again");
 
-// This is for the starting word
-const firstWord = "magnolia";
+let firstWord = "magnolia";
+const guessedLetters = [];
+let remainingGuesses = 8;
+
+const getWord = async function () {
+  const request = await fetch(
+    "https://gist.githubusercontent.com/skillcrush-curriculum/7061f1d4d3d5bfe47efbfbcfe42bf57e/raw/5ffc447694486e7dea686f34a6c085ae371b43fe/words.txt"
+  );
+  const data = await request.text();
+  const wordArray = data.split("\n");
+  const randomIndex = Math.floor(Math.random() * wordArray.length);
+  const firstWord = wordArray[randomIndex].trim();
+  dotSymbol(firstWord);
+};
+
+getWord();
 
 // This is to change the letters of the first word into "●"
 const dotSymbol = function (firstWord) {
@@ -34,30 +30,29 @@ const dotSymbol = function (firstWord) {
   for (const letters of firstWord) {
     // console.log(letters);
     dotLetters.push("●");
-    // console.log(dotLetters);
     word.innerText = dotLetters.join("");
   }
 };
 
-dotSymbol(firstWord);
-
 guessButton.addEventListener("click", function (e) {
   e.preventDefault();
+  // This is to clear the message above the word disguised as "●"
+  message.innerText = "";
+
   // This is to log out the text input into the console
   const letter = letterInput.value;
   // console.log(letter);
 
+  // This checks what the text input is and tells the user what they should be doing
+  const goodGuess = checkInput(letter);
+
+  if (goodGuess) {
+    // This stores all the guesses into an array
+    makeGuess(letter);
+  }
+
   // This is to clear the input box
   letterInput.value = "";
-
-  // This is to clear the message above the word disguised as "●"
-  message.innerText = "";
-
-  // This checks what the text input is and tells the user what they should be doing
-  checkInput(letter);
-
-  // This stores all the guesses into an array
-  makeGuess(letter);
 });
 
 const checkInput = function (input) {
@@ -80,28 +75,17 @@ const checkInput = function (input) {
   }
 };
 
-const makeGuess = function (parameter) {
-  const acceptedLetter = /[a-zA-Z]/;
-  // Capitalizes the characters since JS is case sensitive
-  const upperCase = parameter.toUpperCase();
-
-  // This finds if a letter has been guessed more than once
-  if (guessedLetters.includes(upperCase)) {
+const makeGuess = function (letter) {
+  letter = letter.toUpperCase();
+  if (guessedLetters.includes(letter)) {
     message.innerText = "You already guessed that letter, silly. Try again.";
-  } else if (parameter.length > 1) {
-    message.innerText = "Only one letter at a time please!";
-  } else if (!parameter.match(acceptedLetter)) {
-    message.innerText = "Enter a letter from A-Z please!";
   } else {
-    // Pushes the guessed letters into the guessesLetter array
-    guessedLetters.push(upperCase);
-    // This shows that the guesses are being stored in the guessedLetters array
-    // console.log(guessedLetters);
+    guessedLetters.push(letter);
+    console.log(guessedLetters);
+    guessCount(letter);
+    guessedList();
+    letterReveal(guessedLetters);
   }
-
-  guessedList();
-
-  letterReveal(guessedLetters);
 };
 
 const guessedList = function () {
@@ -116,12 +100,10 @@ const guessedList = function () {
 const letterReveal = function (guessedLetters) {
   const wordUpper = firstWord.toUpperCase();
   const wordArray = wordUpper.split("");
-  // console.log(wordArray);
-
   const dotRemove = [];
-  for (const letters of wordArray) {
-    if (guessedLetters.includes(letters)) {
-      dotRemove.push(letters.toUpperCase());
+  for (const letter of wordArray) {
+    if (guessedLetters.includes(letter)) {
+      dotRemove.push(letter.toUpperCase());
     } else {
       dotRemove.push("●");
     }
@@ -130,9 +112,26 @@ const letterReveal = function (guessedLetters) {
   checkWin();
 };
 
+const guessCount = function (letter) {
+  const upperWord = firstWord.toUpperCase();
+  if (!upperWord.includes(letter)) {
+    message.innerText = `Sorry, but this word does not include the letter ${letter}. Try again!`;
+    remainingGuesses -= 1;
+  } else {
+    message.innerText = `Good guess! This word does include the letter ${letter}.`;
+  }
+
+  if (remainingGuesses === 0) {
+    message.innerHTML = `Game Over. The word was <span class="highlight">${firstWord}</span>.`;
+  } else if (remainingGuesses === 1) {
+    span.innerText = `${remainingGuesses} guess`;
+  } else {
+    span.innerText = `${remainingGuesses} guesses`;
+  }
+};
+
 const checkWin = function () {
-  const win = firstWord.toUpperCase();
-  if (win === word.innerText) {
+  if (firstWord.toUpperCase() === word.innerText) {
     message.classList.add("win");
     message.innerHTML = `<p class="highlight">You guessed correct the word! Congrats!</p>`;
   }
