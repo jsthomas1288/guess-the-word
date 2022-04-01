@@ -18,7 +18,7 @@ const getWord = async function () {
   const data = await request.text();
   const wordArray = data.split("\n");
   const randomIndex = Math.floor(Math.random() * wordArray.length);
-  const firstWord = wordArray[randomIndex].trim();
+  firstWord = wordArray[randomIndex].trim();
   dotSymbol(firstWord);
 };
 
